@@ -212,7 +212,7 @@ int main(int argc, char* args[]) {
         return -1;
     }
 
-    gFont = TTF_OpenFont("arial.ttf", 28); // Make sure you have Arial.ttf font in the current directory
+    gFont = TTF_OpenFont("VCR_OSD_MONO_1.001.ttf", 28); // Make sure you have VCR_OSD_MONO_1.001.ttf font in the current directory
     if (gFont == nullptr) {
         std::cerr << "Failed to load font! SDL_ttf Error: " << TTF_GetError() << std::endl;
         close();
