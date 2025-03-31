@@ -198,7 +198,7 @@ int main(int argc, char* args[]) {
     int screenHeight = WINDOW_HEIGHT;
     bool fullscreen = false;
 
-    gWindow = SDL_CreateWindow("Pixel Game", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, screenWidth, screenHeight, SDL_WINDOW_SHOWN);
+    gWindow = SDL_CreateWindow("Squarix", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, screenWidth, screenHeight, SDL_WINDOW_SHOWN);
     if (gWindow == nullptr) {
         std::cerr << "Window could not be created! SDL_Error: " << SDL_GetError() << std::endl;
         close();
