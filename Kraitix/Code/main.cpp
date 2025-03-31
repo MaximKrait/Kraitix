@@ -6,31 +6,31 @@
 #include <cstdlib>
 #include <ctime>
 
-// Константы
+// Constants
 const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 600;
 const int PLAYER_SIZE = 20;
 const int PLAYER_SPEED = 5;
 const int INITIAL_LIVES = 3;
-const Uint32 FRAME_DELAY = 16; // Для 60 FPS
+const Uint32 FRAME_DELAY = 16; // For 60 FPS
 const int ENEMY_SIZE = 20;
 const int ENEMY_SPEED = 2;
 const int NUM_ENEMIES = 5;
-const int SCORE_INCREMENT_INTERVAL = 1000; // 1 секунда
-const int IMMUNITY_DURATION = 3000; // 3 секунды
+const int SCORE_INCREMENT_INTERVAL = 1000; // 1 second
+const int IMMUNITY_DURATION = 3000; // 3 seconds
 
-// Глобальные переменные
+// Global variables
 SDL_Window* gWindow = nullptr;
 SDL_Renderer* gRenderer = nullptr;
 TTF_Font* gFont = nullptr;
 
-// Структура для врагов
+// Structure for enemies
 struct Enemy {
     int x, y;
     bool active;
 };
 
-// Функция инициализации SDL и TTF
+// Function to initialize SDL and TTF
 bool init() {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         std::cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError() << std::endl;
@@ -45,7 +45,7 @@ bool init() {
     return true;
 }
 
-// Функция закрытия
+// Function to close
 void close() {
     if (gFont != nullptr) {
         TTF_CloseFont(gFont);
@@ -66,7 +66,7 @@ void close() {
     SDL_Quit();
 }
 
-// Функция рендеринга текста
+// Function to render text
 void renderText(const std::string& message, int x, int y, SDL_Color color) {
     if (gFont == nullptr) {
         std::cerr << "Font not loaded!" << std::endl;
@@ -77,7 +77,7 @@ void renderText(const std::string& message, int x, int y, SDL_Color color) {
     if (textSurface != nullptr) {
         SDL_Texture* textTexture = SDL_CreateTextureFromSurface(gRenderer, textSurface);
         if (textTexture != nullptr) {
-            // Центрируем текст по горизонтали
+            // Center the text horizontally
             int textWidth = textSurface->w;
             int textHeight = textSurface->h;
             SDL_Rect renderQuad = { x - textWidth / 16, y, textWidth, textHeight };
@@ -92,7 +92,7 @@ void renderText(const std::string& message, int x, int y, SDL_Color color) {
 }
 
 
-// Функция отображения главного меню
+// Function to display the main menu
 void showMenu(int& screenWidth, int& screenHeight, bool& fullscreen) {
     bool menuOpen = true;
     SDL_Event e;
@@ -112,21 +112,21 @@ void showMenu(int& screenWidth, int& screenHeight, bool& fullscreen) {
         SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
         SDL_RenderClear(gRenderer);
 
-        // Рендер текста по центру экрана
+        // Render text in the center of the screen
         std::string message0 = "Movement with WASD";
         std::string message1 = "Press ENTER to start the game";  
         
         int textWidth, textHeight;
         
-        // Рендер первого сообщения
+        // Render the first message
         TTF_SizeText(gFont, message0.c_str(), &textWidth, &textHeight);
         int textX = (screenWidth - textWidth) / 2;
         int textY = (screenHeight - textHeight) / 2 - 20;
         renderText(message0, textX, textY, white);
 
-        // Рендер второго сообщения
+        // Render the second message
         TTF_SizeText(gFont, message1.c_str(), &textWidth, &textHeight);
-        textY += 40;  // Расстояние между сообщениями
+        textY += 40;  // Distance between messages
         renderText(message1, textX, textY, white);
 
         SDL_RenderPresent(gRenderer);
@@ -135,17 +135,17 @@ void showMenu(int& screenWidth, int& screenHeight, bool& fullscreen) {
 }
 
 
-// Функция проверки и обновления позиции врагов
+// Function to check and update the position of enemies
 void updateEnemies(std::vector<Enemy>& enemies, int playerX, int playerY, int screenWidth, int screenHeight) {
     for (auto& enemy : enemies) {
         if (enemy.active) {
-            // Двигаемся к игроку
+            // Move towards the player
             if (enemy.x < playerX) enemy.x += ENEMY_SPEED;
             if (enemy.x > playerX) enemy.x -= ENEMY_SPEED;
             if (enemy.y < playerY) enemy.y += ENEMY_SPEED;
             if (enemy.y > playerY) enemy.y -= ENEMY_SPEED;
 
-            // Проверка границ
+            // Check boundaries
             if (enemy.x < 0) enemy.x = 0;
             if (enemy.x > screenWidth - ENEMY_SIZE) enemy.x = screenWidth - ENEMY_SIZE;
             if (enemy.y < 0) enemy.y = 0;
@@ -153,13 +153,13 @@ void updateEnemies(std::vector<Enemy>& enemies, int playerX, int playerY, int sc
         }
     }
 
-    // Проверка на пересечение врагов
+    // Check for enemy intersections
     for (size_t i = 0; i < enemies.size(); ++i) {
         for (size_t j = i + 1; j < enemies.size(); ++j) {
             if (enemies[i].active && enemies[j].active) {
                 if (abs(enemies[i].x - enemies[j].x) < ENEMY_SIZE &&
                     abs(enemies[i].y - enemies[j].y) < ENEMY_SIZE) {
-                    // Переместить врагов в случайные позиции, если они пересекаются
+                    // Move enemies to random positions if they intersect
                     enemies[j].x = rand() % (screenWidth - ENEMY_SIZE);
                     enemies[j].y = rand() % (screenHeight - ENEMY_SIZE);
                 }
@@ -168,9 +168,9 @@ void updateEnemies(std::vector<Enemy>& enemies, int playerX, int playerY, int sc
     }
 }
 
-// Функция отрисовки врагов
+// Function to render enemies
 void renderEnemies(const std::vector<Enemy>& enemies) {
-    SDL_SetRenderDrawColor(gRenderer, 0xFF, 0x00, 0x00, 0xFF); // Красный цвет для врагов
+    SDL_SetRenderDrawColor(gRenderer, 0xFF, 0x00, 0x00, 0xFF); // Red color for enemies
     for (const auto& enemy : enemies) {
         if (enemy.active) {
             SDL_Rect fillRect = { enemy.x, enemy.y, ENEMY_SIZE, ENEMY_SIZE };
@@ -179,15 +179,15 @@ void renderEnemies(const std::vector<Enemy>& enemies) {
     }
 }
 
-// Функция перемещения игрока в безопасное место
+// Function to move the player to a safe place
 void respawnPlayer(int& playerX, int& playerY, int screenWidth, int screenHeight) {
     playerX = rand() % (screenWidth - PLAYER_SIZE);
     playerY = rand() % (screenHeight - PLAYER_SIZE);
 }
 
-// Основная функция
+// Main function
 int main(int argc, char* args[]) {
-    srand(static_cast<unsigned>(time(0))); // Инициализация генератора случайных чисел
+    srand(static_cast<unsigned>(time(0))); // Initialize the random number generator
 
     if (!init()) {
         std::cerr << "Failed to initialize!" << std::endl;
@@ -212,7 +212,7 @@ int main(int argc, char* args[]) {
         return -1;
     }
 
-    gFont = TTF_OpenFont("arial.ttf", 28); // Убедитесь, что у вас есть шрифт Arial.ttf в текущем каталоге
+    gFont = TTF_OpenFont("arial.ttf", 28); // Make sure you have Arial.ttf font in the current directory
     if (gFont == nullptr) {
         std::cerr << "Failed to load font! SDL_ttf Error: " << TTF_GetError() << std::endl;
         close();
@@ -267,7 +267,7 @@ int main(int argc, char* args[]) {
             }
         }
 
-        // Проверка границ игрока
+        // Check player boundaries
         if (playerX < 0) playerX = 0;
         if (playerX > screenWidth - PLAYER_SIZE) playerX = screenWidth - PLAYER_SIZE;
         if (playerY < 0) playerY = 0;
@@ -283,28 +283,28 @@ int main(int argc, char* args[]) {
 if (lives <= 0) {
     std::cout << "Game Over!" << std::endl;
 
-    // Очистка экрана
+    // Clear the screen
     SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
     SDL_RenderClear(gRenderer);
 
-    // Центр экрана
+    // Center of the screen
     int centerX = screenWidth / 2;
     int centerY = screenHeight / 2;
 
-    // Выводим "Game Over"
+    // Display "Game Over"
     renderText("Game Over!", centerX, centerY - 60, {255, 0, 0, 255});
 
-    // Финальный счёт
+    // Final score
     std::string scoreText = "Final Score: " + std::to_string(score);
     renderText(scoreText, centerX, centerY - 20, {255, 255, 255, 255});
 
-    // Сообщение о рестарте
+    // Restart message
     renderText("Press ENTER to restart", centerX, centerY + 40, {200, 200, 200, 255});
 
-    // Обновляем экран
+    // Update the screen
     SDL_RenderPresent(gRenderer);
 
-    // Ожидание нажатия ENTER или выхода
+    // Wait for ENTER key press or exit
     bool waiting = true;
     SDL_Event e;
     while (waiting) {
@@ -313,10 +313,10 @@ if (lives <= 0) {
                 quit = true;
                 waiting = false;
             } else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_RETURN) {
-                // Перезапуск игры
+                // Restart the game
                 score = 0;
                 lives = 3;
-                playerX = screenWidth / 2;  // Сброс позиции игрока, если нужно
+                playerX = screenWidth / 2;  // Reset player position if needed
                 waiting = false;
             }
         }
@@ -333,18 +333,18 @@ if (lives <= 0) {
             }
         }
 
-        // Обновление врагов
+        // Update enemies
         if (!immune) {
             updateEnemies(enemies, playerX, playerY, screenWidth, screenHeight);
         }
 
-        // Обновление счета
+        // Update score
         if (currentTick - lastScoreUpdate >= SCORE_INCREMENT_INTERVAL) {
             score++;
             lastScoreUpdate = currentTick;
         }
 
-        // Отрисовка
+        // Rendering
         SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
         SDL_RenderClear(gRenderer);
 
@@ -356,7 +356,7 @@ if (lives <= 0) {
                 SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
             }
         } else {
-            SDL_SetRenderDrawColor(gRenderer, 0x00, 0xFF, 0x00, 0xFF); // Зелёный цвет для игрока
+            SDL_SetRenderDrawColor(gRenderer, 0x00, 0xFF, 0x00, 0xFF); // Green color for the player
         }
         SDL_Rect playerRect = { playerX, playerY, PLAYER_SIZE, PLAYER_SIZE };
         SDL_RenderFillRect(gRenderer, &playerRect);
@@ -369,7 +369,7 @@ if (lives <= 0) {
 
         SDL_RenderPresent(gRenderer);
 
-        // Обработка бессмертия
+        // Handle immunity
         if (immune && (currentTick - immuneStartTime >= IMMUNITY_DURATION)) {
             immune = false;
         }
@@ -381,4 +381,3 @@ if (lives <= 0) {
     close();
     return 0;
 }
-
